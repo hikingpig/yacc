@@ -348,9 +348,9 @@ func main() {
 	setup() // initialize and read productions
 
 	tbitset = (ntokens + 32) / 32
-	cpres()  // make table of which productions yield a given nonterminal
-	cempty() // make a table of which nonterminals can match the empty string
-	cpfir()  // make a table of firsts of nonterminals
+	cpres()        // make table of which productions yield a given nonterminal
+	cempty()       // make a table of which nonterminals can match the empty string
+	getFirstSets() // make a table of firsts of nonterminals
 
 	stagen() // generate the states
 
@@ -1616,7 +1616,7 @@ again:
 }
 
 // compute an array with the first of nonterminals
-func cpfir() {
+func getFirstSets() {
 	var s, n, p, np, ch, i int
 	var curres [][]int
 	var prd []int
