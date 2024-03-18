@@ -193,7 +193,7 @@ type Item struct {
 
 type Symb struct {
 	name    string
-	noconst bool
+	isconst bool
 	value   int
 }
 
@@ -696,7 +696,7 @@ outer:
 	// put out non-literal terminals
 	for i := TOKSTART; i <= ntokens; i++ {
 		// non-literals
-		if !tokset[i].noconst {
+		if tokset[i].isconst {
 			fmt.Fprintf(ftable, "const %v = %v\n", tokset[i].name, tokset[i].value)
 		}
 	}
@@ -771,7 +771,7 @@ func defin(nt int, s string) int {
 			copy(anontrst, nontrst)
 			nontrst = anontrst
 		}
-		nontrst[nnonter] = Symb{name: s}
+		nontrst[nnonter] = Symb{name: s, isconst: true}
 		fmt.Printf("========= sym: %v\n", nontrst[nnonter])
 		return NTBASE + nnonter
 	}
@@ -790,6 +790,7 @@ func defin(nt int, s string) int {
 		toklev = atoklev
 	}
 	tokset[ntokens].name = s
+	tokset[ntokens].isconst = true
 	toklev[ntokens] = 0
 
 	// establish value for token
@@ -807,12 +808,12 @@ func defin(nt int, s string) int {
 		if val == 0 {
 			errorf("token value 0 is illegal")
 		}
-		tokset[ntokens].noconst = true
+		tokset[ntokens].isconst = false
 	} else {
 		val = extval
 		extval++
 		if s[0] == '$' {
-			tokset[ntokens].noconst = true
+			tokset[ntokens].isconst = false
 		}
 	}
 
