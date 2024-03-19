@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+var nolook = 0 // flag to turn off lookahead computations
+
 /*
 Lkset implements Lookahead set for LR(1) parsing.
 Each integer in the set represents 32 bits.
@@ -15,19 +17,19 @@ For example, 1st bit is in the 1st integer, but it is the last bit of that integ
 type Lkset []int
 
 /*
-setbit sets a bit at position `bit` to 1
+set sets a bit at position `bit` to 1
 bit>>5 retrieves the integer for `bit`
 bit&31 takes the last 5 bits of `bit`, essentially the same as `bit` if it is less than 5 bits
 a |= (1<<b) set the bit bth from the END of a
 */
-func (s Lkset) setbit(bit int) {
+func (s Lkset) set(bit int) {
 	s[bit>>5] |= (1 << uint(bit&31))
 }
 
 /*
 isSet checks if bit `bit` is ON in the set
 */
-func (s Lkset) isSet(bit int) bool {
+func (s Lkset) check(bit int) bool {
 	return s[bit>>5]&(1<<uint(bit&31)) == 0
 }
 
@@ -58,7 +60,7 @@ func (s Lkset) String() string {
 	buf := strings.Builder{}
 	buf.WriteString(" { ")
 	for i := 0; i <= nterm; i++ {
-		if s.isSet(i) {
+		if s.check(i) {
 			buf.WriteString(terms[i].name)
 		}
 	}
@@ -66,6 +68,6 @@ func (s Lkset) String() string {
 	return buf.String()
 }
 
-func newLkset(n int) Lkset {
-	return make([]int, n)
+func newLkset() Lkset {
+	return make([]int, tbitset)
 }
