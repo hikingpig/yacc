@@ -20,7 +20,7 @@ var statemem []Item // items for all states
 // put an item on statemem
 func putitem(p Pitem, set Lkset) {
 	p.off++
-	p.first = p.prod[p.off]
+	p.first = p.prod[p.off] // ================== SHOULD EXPLICITLY INCREASE?
 
 	if pidebug != 0 && foutput != nil {
 		fmt.Fprintf(foutput, "putitem(%v), state %v\n", writem(p), nstate)
@@ -39,36 +39,29 @@ func putitem(p Pitem, set Lkset) {
 	pstate[nstate+1] = j // ============= next time, for same nstate, j = j+1, will set statemem[j+1]
 }
 
-// creates output string for item pointed to by pp
+// the production stored in pp is the same or missing the first symbol (LHS)
+// compared to the original production in prdptr
+// the end symbol of a production is negative. it represents an action.
+// whenever it encounters negative, it knows to reduce and take action!
 func writem(pp Pitem) string {
-	var i int
-
+	p0 := prdptr[pp.prodno] // original production
 	p := pp.prod
-	q := chcopy(nonterms[prdptr[pp.prodno][0]-NTBASE].name) + ": "
-	npi := pp.off
-
-	pi := aryeq(p, prdptr[pp.prodno])
-
-	for {
+	q := nonterms[p0[0]-NTBASE].name + ": " // the LHS of p0
+	i := len(p) - len(p0) + 1               // idx starts at 0: missing LHS, 1: equal (skip LHS)
+	for i < len(p)-1 {                      // skip the end symbol(action)
 		c := ' '
-		if pi == npi {
+		if i == pp.off { // write a '.' at p.off
 			c = '.'
 		}
 		q += string(c)
 
-		i = p[pi]
-		pi++
-		if i <= 0 {
-			break
-		}
-		q += chcopy(symName(i))
+		q += symName(p[i]) // ================= is it necessary? symname are unquoted!!!
+		i++
 	}
 
-	// an item calling for a reduction
-	i = p[npi]
-	if i < 0 {
-		q += fmt.Sprintf("    (%v)", -i)
+	n := p[pp.off]
+	if n < 0 { // end of production, print action, gonna reduce soon!
+		q += fmt.Sprintf("    (%v)", -n)
 	}
-
 	return q
 }
