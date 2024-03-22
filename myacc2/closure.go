@@ -39,7 +39,7 @@ var clkset lkset
 var tbitset = 0           // size of lookahead sets
 var firstSets []lkset     // the first sets of symbols
 var empty []bool          // to check whether a symbol is nullable
-var prdsStartWith [][]prd // productions that has a symbol as lhs
+var prdsStartWith [][]prd // 1st dimension is the symbol, 2nd dimension is prds started with it
 var allPrds []prd
 
 /* closure computes closure for state n*/
@@ -48,8 +48,7 @@ func closure(n int) {
 	// copy kernel items of new state
 	for p := kernlp[n]; p < kernlp[n+1]; p++ {
 		wSet[cwp].item = kernlItems[p].clone()
-		wSet[cwp].processed = false
-		wSet[cwp].done = false
+		wSet[cwp].processed, wSet[cwp].done = false, false
 		cwp++
 	}
 	fill(clkset, tbitset, 0)
@@ -70,7 +69,7 @@ func closure(n int) {
 			wSet[i].processed = true // mark processed, skip next time
 
 			first := wSet[i].item.first
-			if first < NTBASE { // terminal symbol, skip
+			if first < NTBASE { // terminal symbol or action, skip
 				continue
 			}
 			// non-terminal symbol, get lookahead set for items derived from this item
@@ -119,8 +118,7 @@ func closure(n int) {
 					extend(&wSet, WSETINC)
 				}
 				wSet[cwp].item = item{1, prdI, prdI.prd[1], clkset.clone()}
-				wSet[cwp].done = false
-				wSet[cwp].processed = false
+				wSet[cwp].processed, wSet[cwp].done = false, false
 				changed = true
 				cwp++
 			}
