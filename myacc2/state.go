@@ -1,7 +1,6 @@
 package myacc2
 
 import (
-	"reflect"
 	"sort"
 )
 
@@ -107,7 +106,7 @@ prevState:
 			continue
 		}
 		for k, l := p1, q1; l < q2; k, l = k+1, l+1 {
-			if !reflect.DeepEqual(kernls[k].prd, kernls[l].prd) || kernls[k].off != kernls[l].off {
+			if kernls[k].prd.id != kernls[l].prd.id || kernls[k].off != kernls[l].off {
 				continue prevState
 			}
 		}
