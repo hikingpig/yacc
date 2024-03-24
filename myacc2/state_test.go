@@ -6,8 +6,8 @@ import (
 )
 
 func TestStateGen(t *testing.T) {
-	nterm = 6
-	nnonterm = 7
+	termN = 6
+	nontermN = 7
 	allPrds = []prd{
 		{0, []int{4096, 4097, 1, 0}},
 		{1, []int{4097, 4098, -1}},
