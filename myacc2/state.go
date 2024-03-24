@@ -33,8 +33,7 @@ func stategen() {
 	clkset = newLkset()
 	addKernItem(item{0, allPrds[0], 0, newLkset()})
 	nstate++
-	i := 0
-	for i < nstate {
+	for i := 0; i < nstate; i++ {
 		closure(i)
 		for j := 0; j < cwp; j++ {
 			w := wSet[j]
@@ -56,7 +55,6 @@ func stategen() {
 			}
 			newState(first)
 		}
-		i++
 	}
 }
 
