@@ -7,7 +7,7 @@ import (
 
 func TestStateGen(t *testing.T) {
 	termN = 6
-	nontermN = 7
+	nontermN = 8 // include $accept
 	allPrds = []prd{
 		{0, []int{4096, 4097, 1, 0}},
 		{1, []int{4097, 4098, -1}},
@@ -36,7 +36,7 @@ func TestStateGen(t *testing.T) {
 	wSet = make([]wItem, 57)
 	tbitset = 1
 	clkset = newLkset()
-	expected := []item{
+	expKern := []item{
 		{1, prd{0, []int{4096, 4097, 1, 0}}, 4097, lkset{0}},
 		{2, prd{0, []int{4096, 4097, 1, 0}}, 1, lkset{0}},
 		{2, prd{1, []int{4097, 4098, -1}}, -1, lkset{2}},
@@ -53,14 +53,40 @@ func TestStateGen(t *testing.T) {
 		{2, prd{8, []int{4102, 4103, -8}}, -8, lkset{34}},
 		{2, prd{9, []int{4103, 5, -9}}, -9, lkset{34}},
 	}
+	expActs := []int{1, 2, 3, 4, 5, 7, 8, 10, 7, 8}
+	expGotos := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1}
+	expLastAct := 9
 	stategen()
-	res := []item{}
+	resKern := []item{}
 	for _, a := range kernls {
 		if a.prd.prd != nil {
-			res = append(res, a)
+			resKern = append(resKern, a)
 		}
 	}
-	if !reflect.DeepEqual(expected, res) {
-		t.Errorf("stategen result conflict: expected: %+v, got: %+v\n", expected, res)
+	if !reflect.DeepEqual(expKern, resKern) {
+		t.Errorf("kernels not correct: expected: %+v, got: %+v\n", expKern, resKern)
+	}
+	resActs := []int{}
+	for _, a := range actions {
+		if a == 0 {
+			break
+		}
+		resActs = append(resActs, a)
+	}
+	if !reflect.DeepEqual(resActs, expActs) {
+		t.Errorf("actions not correct: expected: %v, got: %v\n", expActs, resActs)
+	}
+	resGotos := []int{}
+	for _, g := range gotoIdx {
+		if g == 0 {
+			break
+		}
+		resGotos = append(resGotos, g)
+	}
+	if !reflect.DeepEqual(resGotos, expGotos) {
+		t.Errorf("gotos not correct: expected: %v, got: %v\n", expGotos, resGotos)
+	}
+	if expLastAct != lastAct {
+		t.Errorf("last action not correct: expected: %v, got: %v", expLastAct, lastAct)
 	}
 }
