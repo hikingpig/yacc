@@ -2,6 +2,7 @@ package myacc2
 
 const NTBASE = 010000
 const WSETINC = 50 // increase for working sets    wsets
+const NSTATES = 16000
 
 type prd struct {
 	id  int
@@ -32,9 +33,9 @@ type wItem struct {
 // }
 
 var cwp int
-var wSet []wItem // store temporary items generated during closure
-var kernlp []int // pointer to kernel items
-var kernlItems []item
+var wSet []wItem                    // store temporary items generated during closure
+var kernlp = make([]int, NSTATES+2) // pointer to kernel items
+var kernls []item
 var clkset lkset
 var tbitset = 0           // size of lookahead sets
 var firstSets []lkset     // the first sets of symbols
@@ -47,7 +48,7 @@ func closure(n int) {
 	cwp = 0 // reset current pointer for working set
 	// copy kernel items of new state
 	for p := kernlp[n]; p < kernlp[n+1]; p++ {
-		wSet[cwp].item = kernlItems[p].clone()
+		wSet[cwp].item = kernls[p].clone()
 		wSet[cwp].processed, wSet[cwp].done = false, false
 		cwp++
 	}

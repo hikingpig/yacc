@@ -32,7 +32,7 @@ func TestClosure(t *testing.T) {
 	firstSets = []lkset{{32}, {32}, {32}, {32}, {32}, {32}, {32}}
 	empty = []bool{false, true, true, false, false, false, false, false}
 
-	kernlItems = []item{
+	kernls = []item{
 		{1, allPrds[0], 4097, lkset{0}},
 		{2, allPrds[0], 1, lkset{0}},
 		{1, allPrds[1], -1, lkset{2}},
