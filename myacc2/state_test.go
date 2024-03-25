@@ -53,9 +53,9 @@ func TestStateGen(t *testing.T) {
 		{2, prd{8, []int{4102, 4103, -8}}, -8, lkset{34}},
 		{2, prd{9, []int{4103, 5, -9}}, -9, lkset{34}},
 	}
-	expActs := []int{1, 2, 3, 4, 5, 7, 8, 10, 7, 8}
-	expGotos := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1}
-	expLastAct := 9
+	expGotos := []int{1, 2, 3, 4, 5, 7, 8, 10, 7, 8}
+	expGotoIdx := []int{-1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1}
+	expLastGoto := 9
 	stategen()
 	resKern := []item{}
 	for _, a := range kernls {
@@ -66,27 +66,27 @@ func TestStateGen(t *testing.T) {
 	if !reflect.DeepEqual(expKern, resKern) {
 		t.Errorf("kernels not correct: expected: %+v, got: %+v\n", expKern, resKern)
 	}
-	resActs := []int{}
-	for _, a := range actions {
+	resGotos := []int{}
+	for _, a := range goTos {
 		if a == 0 {
 			break
 		}
-		resActs = append(resActs, a)
+		resGotos = append(resGotos, a)
 	}
-	if !reflect.DeepEqual(resActs, expActs) {
-		t.Errorf("actions not correct: expected: %v, got: %v\n", expActs, resActs)
+	if !reflect.DeepEqual(resGotos, expGotos) {
+		t.Errorf("actions not correct: expected: %v, got: %v\n", expGotos, resGotos)
 	}
-	resGotos := []int{}
+	resGotoIdx := []int{}
 	for _, g := range gotoIdx {
 		if g == 0 {
 			break
 		}
-		resGotos = append(resGotos, g)
+		resGotoIdx = append(resGotoIdx, g)
 	}
-	if !reflect.DeepEqual(resGotos, expGotos) {
+	if !reflect.DeepEqual(resGotoIdx, expGotoIdx) {
 		t.Errorf("gotos not correct: expected: %v, got: %v\n", expGotos, resGotos)
 	}
-	if expLastAct != lastAct {
-		t.Errorf("last action not correct: expected: %v, got: %v", expLastAct, lastAct)
+	if expLastGoto != lastGoto {
+		t.Errorf("last action not correct: expected: %v, got: %v", expLastGoto, lastGoto)
 	}
 }

@@ -9,8 +9,8 @@ const TEMPSIZE = 16000
 const ACTSIZE = 240000
 
 var gotoIdx = make([]int, NSTATES)
-var actions = make([]int, ACTSIZE)
-var lastAct int
+var goTos = make([]int, ACTSIZE)
+var lastGoto int // last goto's index in goTos
 
 var nstate = 0
 var stateChain = make([]int, NSTATES)    // chain states of the same transition symbol together
@@ -66,7 +66,7 @@ func stategen() {
 				transNonterm[first-NTBASE] = s
 			}
 		}
-		gotoIdx[i] = packActions(transNonterm[1:], nontermN-1) - 1 // $accept excluded from actions
+		gotoIdx[i] = packGotos(transNonterm[1:], nontermN-1) - 1 // $accept is excluded from goTos
 	}
 }
 
@@ -127,8 +127,8 @@ prevState:
 	return -1
 }
 
-// compact actions by removing leading and trailing zeros and duplicated parts
-func packActions(trans []int, n int) int {
+// compact goTos by removing leading and trailing zeros and duplicated parts
+func packGotos(trans []int, n int) int {
 	m := 0
 	// skip leading zeros
 	for m < n && trans[m] == 0 {
@@ -142,27 +142,27 @@ func packActions(trans []int, n int) int {
 		n--
 	}
 	trans = trans[m : n+1]
-	maxStart := len(actions) - len(trans)
+	maxStart := len(goTos) - len(trans)
 nextStart:
 	for start := 0; start < maxStart; start++ {
-		// find spot with enough empty room for new actions
+		// find spot with enough empty room for new goTos
 		for i, j := 0, start; i < len(trans); i, j = i+1, j+1 {
-			if trans[i] != 0 && actions[j] != 0 && trans[i] != actions[j] {
+			if trans[i] != 0 && goTos[j] != 0 && trans[i] != goTos[j] {
 				continue nextStart
 			}
 		}
 		// found it, store action
 		for i, j := 0, start; i < len(trans); i, j = i+1, j+1 {
 			if trans[i] != 0 {
-				actions[j] = trans[i]
-				if j > lastAct {
-					lastAct = j
+				goTos[j] = trans[i]
+				if j > lastGoto {
+					lastGoto = j
 				}
 			}
 		}
 
 		return -m + start
 	}
-	// can not find empty spots for new actions
+	// can not find empty spots for new goTos
 	return 0
 }
