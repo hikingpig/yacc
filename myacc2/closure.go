@@ -21,6 +21,10 @@ func (i item) clone() item {
 	return item{i.off, i.prd, i.first, i.lkset.clone()}
 }
 
+func (i item) string() string {
+	return ""
+}
+
 type wItem struct {
 	item      item
 	processed bool // mark processed during closure
