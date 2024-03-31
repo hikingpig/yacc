@@ -68,8 +68,16 @@ func newLkset() lkset {
 	return make([]int, tbitset)
 }
 
+func emptyLkset() lkset {
+	return []int{}
+}
+
 func (l lkset) clone() lkset {
 	newSet := newLkset()
 	copy(newSet, l)
 	return newSet
+}
+
+func (l lkset) isEmpty() bool {
+	return len(l) == 0
 }

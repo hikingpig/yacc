@@ -47,7 +47,7 @@ var empty []bool          // to check whether a symbol is nullable
 var prdsStartWith [][]prd // 1st dimension is the symbol, 2nd dimension is prds started with it
 var allPrds []prd
 
-/* closure computes closure for state n*/
+/* closure computes LALR(1) closure for state n*. used in stategen*/
 func closure(n int) {
 	cwp = 0 // reset current pointer for working set
 	// copy kernel items of new state
@@ -123,6 +123,57 @@ func closure(n int) {
 					extend(&wSet, WSETINC)
 				}
 				wSet[cwp].item = item{1, prdI, prdI.prd[1], clkset.clone()}
+				wSet[cwp].processed, wSet[cwp].done = false, false
+				changed = true
+				cwp++
+			}
+		}
+	}
+}
+
+/* closure0 computes LR0 closure for state n. used in writing output*/
+func closure0(n int) {
+	cwp = 0 // reset current pointer for working set
+	// copy kernel items of new state
+	for p := kernlp[n]; p < kernlp[n+1]; p++ {
+		wSet[cwp].item = kernls[p].clone()
+		wSet[cwp].processed, wSet[cwp].done = false, false
+		cwp++
+	}
+	/* changed reflects that
+	- an item is added to closure
+	*/
+	changed := true
+	for changed {
+		changed = false
+		for i := 0; i < cwp; i++ {
+			if wSet[i].processed {
+				continue
+			}
+			wSet[i].processed = true // mark processed, skip next time
+
+			first := wSet[i].item.first
+			if first < NTBASE { // terminal symbol, skip
+				continue
+			}
+
+			prds := prdsStartWith[first-NTBASE]
+
+		nextPrd:
+			for _, prdI := range prds {
+				for i := 0; i < cwp; i++ {
+					itemI := wSet[i].item
+					// derived item always has oft = 1
+					if itemI.off == 1 && itemI.prd.id == prdI.id {
+						continue nextPrd
+
+					}
+				}
+
+				if cwp > len(wSet) {
+					extend(&wSet, WSETINC)
+				}
+				wSet[cwp].item = item{1, prdI, prdI.prd[1], emptyLkset()}
 				wSet[cwp].processed, wSet[cwp].done = false, false
 				changed = true
 				cwp++
