@@ -105,10 +105,10 @@ outer:
 		case MARK, ENDFILE:
 			break outer
 
-		case ';':
+		case ';': // ================ NEVER GOT THIS?
 			// Do nothing.
 
-		case START:
+		case START: // ============== NEVER GOT THIS??S
 			t = gettok()
 			if t != IDENTIFIER {
 				errorf("bad %%start construction")

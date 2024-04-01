@@ -8,10 +8,8 @@ const (
 	WSETINC  = 50     // increase for working sets    wsets
 	STATEINC = 200    // increase for states          statemem
 	PRIVATE  = 0xE000 // value of long terminal symbol begins from unicode's private usage, except for $end
-	NTBASE   = 010000 // value for non-terminal symbol starts from NTBASE
 	RULEINC  = 50     // increase for max rule length prodptr[i]
 	TEMPSIZE = 16000
-	TOKSTART = 4 //index of first defined token
 	NSTATES  = 16000
 	ACTSIZE  = 240000
 )

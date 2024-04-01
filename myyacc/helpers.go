@@ -30,6 +30,7 @@ func ASSOC(i int) int { return i & 3 }
 // macros for setting associativity and precedence levels
 func SETASC(i, j int) int  { return i | j }
 func SETPLEV(i, j int) int { return i | (j << 4) }
+func PLEVEL(i int) int     { return (i >> 4) & 077 }
 
 func isdigit(c rune) bool { return c >= '0' && c <= '9' }
 

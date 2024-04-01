@@ -52,6 +52,50 @@ func cpres() {
 	}
 }
 
+/*
+cpres computes pres:
+- the first dimension is LHS non-terminal symbol,
+- the second dimension is production number,
+- the third is symbols in that rule
+* don't skip the LHS. keep the rule the same as that in prdptr
+*/
+func cpres2() {
+	pres = make([][][]int, nterm+1)
+	curres := make([][]int, nprod)
+
+	if false {
+		for j := 0; j <= nnonterm; j++ {
+			fmt.Printf("nnonter[%v] = %v\n", j, nonterms[j].name)
+		}
+		for j := 0; j < nprod; j++ {
+			fmt.Printf("prdptr[%v][0] = %v+NTBASE\n", j, prdptr[j][0]-NTBASE)
+		}
+	}
+
+	fatfl = 0 // make undefined symbols nonfatal
+	for i := 0; i <= nnonterm; i++ {
+		n := 0
+		c := i + NTBASE
+		for j := 0; j < nprod; j++ {
+			if prdptr[j][0] == c { // ========= should use map for more efficient access? NO!
+				curres[n] = prdptr[j] // ============= keep preference, don't copy it over!
+				n++
+			}
+		}
+		if n == 0 {
+			errorf("nonterminal %v not defined", nonterms[i].name)
+			continue
+		}
+		pres[i] = make([][]int, n)
+		copy(pres[i], curres)
+	}
+	fatfl = 1
+	if nerrors != 0 {
+		summary()
+		exit(1)
+	}
+}
+
 func cempty() {
 	var i, p, np int
 	var prd []int

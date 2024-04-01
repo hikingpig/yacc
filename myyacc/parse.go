@@ -143,6 +143,7 @@ func getword(c rune) {
 	}
 	ungetrune(finput, c)
 }
+
 func gettok() int {
 	var i int
 	var match, c rune
@@ -152,6 +153,7 @@ func gettok() int {
 		lineno += peekline
 		peekline = 0
 		c = getrune(finput)
+		// skip all white spaces
 		for c == ' ' || c == '\n' || c == '\t' || c == '\v' || c == '\r' {
 			if c == '\n' {
 				lineno++
@@ -159,7 +161,6 @@ func gettok() int {
 			c = getrune(finput)
 		}
 
-		// skip comment -- fix
 		if c != '/' {
 			break
 		}
