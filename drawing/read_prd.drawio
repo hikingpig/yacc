@@ -1,0 +1,130 @@
+<mxfile host="app.diagrams.net" modified="2024-04-02T07:31:44.211Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="04S9buNh5hW08hthdbHf" version="24.2.0" type="device">
+  <diagram name="Trang-1" id="TX8eIrPObgDpuCnPXQ4g">
+    <mxGraphModel dx="398" dy="222" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-1" value="&lt;div style=&quot;font-size: 17px;&quot;&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;program&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 17px;&quot;&gt;&lt;span style=&quot;white-space: normal;&quot;&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;&lt;span style=&quot;white-space:pre&quot;&gt;&#x9;&lt;/span&gt;: statement_list { Tree = $1 }&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 17px;&quot;&gt;&lt;span style=&quot;white-space: normal;&quot;&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="200" y="40" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-2" value="t = IDENTCOLON" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="140" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-3" value="[4097 ...]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="180" width="100" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-4" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.067;entryY=0.333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="k4Sdx5Ipx6oZv-G7Tylx-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="115" y="140" as="sourcePoint" />
+            <mxPoint x="165" y="90" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="165" y="140" />
+              <mxPoint x="115" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-5" value="t = IDENTIFIER" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="140" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-6" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.3;entryY=0.667;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="k4Sdx5Ipx6oZv-G7Tylx-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="140" as="sourcePoint" />
+            <mxPoint x="340" y="90" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="340" y="140" />
+              <mxPoint x="290" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-7" value="[4097 4098]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="180" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-8" value="t == &#39;=&#39;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="140" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-9" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.567;entryY=0.667;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="453" y="140" as="sourcePoint" />
+            <mxPoint x="363.0999999999999" y="80.01999999999998" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="503" y="140" />
+              <mxPoint x="453" y="90" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-10" value="cpact([4097 4098], 2)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="183" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-11" value="ungetrune" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="490" y="110" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-12" value="{ Tree =&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="170" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.045;entryY=0.433;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="k4Sdx5Ipx6oZv-G7Tylx-10" target="k4Sdx5Ipx6oZv-G7Tylx-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-14" value="case $" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="220" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-15" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.767;entryY=0.333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="k4Sdx5Ipx6oZv-G7Tylx-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="740" y="233" as="sourcePoint" />
+            <mxPoint x="790" y="183" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="233" />
+              <mxPoint x="800" y="20" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-16" value="isdigit(c)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="270" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-17" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.8;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="k4Sdx5Ipx6oZv-G7Tylx-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="290" as="sourcePoint" />
+            <mxPoint x="770" y="240" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="770" y="290" />
+              <mxPoint x="850" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-18" value="&lt;div data-darkreader-inline-color=&quot;&quot; style=&quot;color: rgb(232, 215, 186); font-family: Menlo, Monaco, &amp;quot;Courier New&amp;quot;, monospace; white-space: pre; --darkreader-inline-color: #fce2b4;&quot;&gt; {&lt;/div&gt;&lt;div data-darkreader-inline-color=&quot;&quot; style=&quot;color: rgb(232, 215, 186); font-family: Menlo, Monaco, &amp;quot;Courier New&amp;quot;, monospace; white-space: pre; --darkreader-inline-color: #fce2b4;&quot;&gt;     &lt;span style=&quot;color: rgb(156, 220, 254); --darkreader-inline-color: #c8e0db;&quot; data-darkreader-inline-color=&quot;&quot;&gt;Tree&lt;/span&gt; &lt;span style=&quot;color: rgb(212, 212, 212); --darkreader-inline-color: #eeddbf;&quot; data-darkreader-inline-color=&quot;&quot;&gt;=&lt;/span&gt; &lt;span style=&quot;color: rgb(156, 220, 254); --darkreader-inline-color: #c8e0db;&quot; data-darkreader-inline-color=&quot;&quot;&gt;yyDollar&lt;/span&gt;[&lt;span style=&quot;color: rgb(181, 206, 168); --darkreader-inline-color: #d7d6a9;&quot; data-darkreader-inline-color=&quot;&quot;&gt;1&lt;/span&gt;].&lt;span style=&quot;color: rgb(156, 220, 254); --darkreader-inline-color: #c8e0db;&quot; data-darkreader-inline-color=&quot;&quot;&gt;tnode&lt;/span&gt;&lt;/div&gt;&lt;div data-darkreader-inline-color=&quot;&quot; style=&quot;color: rgb(232, 215, 186); font-family: Menlo, Monaco, &amp;quot;Courier New&amp;quot;, monospace; white-space: pre; --darkreader-inline-color: #fce2b4;&quot;&gt; }&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="520" y="320" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-20" value="t == &quot;;&quot; break" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="140" y="300" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-21" value="" style="curved=1;endArrow=classic;html=1;rounded=0;entryX=0.033;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="197" y="300" as="sourcePoint" />
+            <mxPoint x="236.89999999999998" y="90" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="267" y="320" />
+              <mxPoint x="217" y="270" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-22" value="[4097 4098 -1]" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="140" y="360" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-23" value="&lt;div style=&quot;font-size: 18px;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;statement_list&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 18px;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;: statement_list statement { $$ = NewNode(StatementListTy, $1, $2) }&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 18px;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;| /* Empty */ { $$ = NewNode(EmptyTy) }&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 18px;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;;&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="626" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-25" value="- starting of rule: (LHS)&lt;blockquote data-darkreader-inline-border-left=&quot;&quot; data-darkreader-inline-border-bottom=&quot;&quot; data-darkreader-inline-border-right=&quot;&quot; data-darkreader-inline-border-top=&quot;&quot; style=&quot;margin: 0px 0px 0px 40px; border: none; padding: 0px; --darkreader-inline-border-top: initial; --darkreader-inline-border-right: initial; --darkreader-inline-border-bottom: initial; --darkreader-inline-border-left: initial;&quot;&gt;&lt;div&gt;&lt;div&gt;- IDENTCOLON&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;- |&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;div&gt;- in a rule: (RHS)&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;- IDENTIFER IDENTIFIER IDENTIFER ...&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;- { action } =&amp;gt; cpyact&lt;br&gt;&lt;/div&gt;&lt;div&gt;- finish of rule&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;- ; or | =&amp;gt; store prod&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="590" width="270" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-26" value="- Action may be embedded in the middle of rule&lt;div&gt;A: B C D {a1} E F {a2} G K;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="320" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-27" value="- curprod: [A B C D]&lt;div&gt;- cpyact&lt;br&gt;&lt;div&gt;- prd[1] = [$$1, -1]&lt;/div&gt;&lt;div&gt;- curprod = [A B C D $$1]&lt;/div&gt;&lt;/div&gt;&lt;div&gt;- curprod = [A B C D $$1 E F]&lt;/div&gt;&lt;div&gt;- prd[2] = [$$2, -2]&lt;/div&gt;&lt;div&gt;- curprod = [A B C D $$1 E F $$2 G K]&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="50" y="840" width="270" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="k4Sdx5Ipx6oZv-G7Tylx-28" value="- $$1 and $$2 are empty productions&lt;div&gt;- when they are reduced, the actions associated with them will be executed&lt;/div&gt;&lt;div&gt;- to recognize them, we will rely on the their lksets, defined by the above rule&lt;/div&gt;&lt;div&gt;- lkset($$1) = FIRST(E F G K)&lt;/div&gt;&lt;div&gt;- lkset ($$2) = FIRST(G K)&lt;/div&gt;&lt;div&gt;- futhermore, they can only appear in closing item:&lt;br&gt;[A B C D $$1 E F $$2 G K]&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="50" y="960" width="290" height="160" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
