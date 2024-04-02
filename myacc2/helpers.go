@@ -78,3 +78,9 @@ func printItems(s []item) {
 		printItem(a)
 	}
 }
+
+func isdigit(c rune) bool { return c >= '0' && c <= '9' }
+
+func isword(c rune) bool {
+	return c >= 0xa0 || c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+}
