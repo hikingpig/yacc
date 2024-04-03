@@ -28,7 +28,7 @@ func shiftReduceConflict(r, t, s int) {
 }
 
 // compute reductions after closing a state
-func cpReds(i int) {
+func cReds(i int) {
 	red := 0
 	for _, w := range wSet[:cwp] {
 		first := w.item.first
@@ -141,7 +141,7 @@ func output() {
 		if i == 1 {
 			trans[1] = ACCEPTCODE
 		}
-		cpReds(i)
+		cReds(i)
 		writeState(i)
 	}
 
