@@ -6,7 +6,7 @@ import (
 )
 
 const STATEINC = 200
-const TEMPSIZE = 16000
+const TRANSIZE = 16000
 const ACTSIZE = 240000
 const ACCEPTCODE = 8191
 const ERRCODE = 8190

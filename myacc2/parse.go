@@ -57,6 +57,9 @@ var fmtImported bool               // helps to import fmt just once
 var fcode = &bytes.Buffer{}        // saved code, write to ftable later!!!
 var rlines []int                   // line number of a rule
 var nprod = 1                      // number of productions
+var initialstacksize = 16          // initial stack size
+const TOKSTART = 4                 // the first terminal symbol defined grammar
+
 type Error struct {
 	lineno int
 	tokens []string
@@ -137,8 +140,7 @@ func ungetrune(f *bufio.Reader, c rune) {
 	peekrune = c
 }
 
-// skip over comments
-// skipcom is called after reading a '/'
+// skip over comments, is called after reading a '/'
 func skipcom() int {
 	c := getrune(finput)
 	if c == '/' { // line comment, skip the whole line
@@ -188,8 +190,8 @@ func getword(c rune) {
 }
 
 // consume token, its name is stored in tokname, numeric value is in numbval
-// returns the token types: ENDFILE, TYPENAME, IDENTIFIER, MARK, LCURLY, PREC, "="???,
-// NUMBER, IDENTCOLON
+// returns the token types: ENDFILE, TYPENAME, IDENTIFIER, NUMBER, IDENTCOLON
+// MARK, LCURLY, PREC, "=" (for "{"" of action),
 func gettok() int {
 	var i int
 	var match, c rune
@@ -328,160 +330,17 @@ var ftable *bufio.Writer
 var infile string
 var prefix string
 
-// copy the union declaration to the output, and the define file if present
-func cpyunion() { // ===== how many union types? all?
-
-	fmt.Fprintf(ftable, "\n//line %v:%v\n", infile, lineno)
-	fmt.Fprintf(ftable, "type %sSymType struct", prefix)
-
-	level := 0
-
-out:
-	for {
-		c := getrune(finput)
-		if c == EOF {
-			errorf("EOF encountered while processing %%union")
-		}
-		ftable.WriteRune(c)
-		switch c {
-		case '\n':
-			lineno++
-		case '{':
-			if level == 0 {
-				fmt.Fprintf(ftable, "\n\tyys int")
-			}
-			level++
-		case '}':
-			level--
-			if level == 0 {
-				break out
-			}
-		}
+// parse .y input file
+func parseInput() {
+	t := parseDeclr()
+	if t == ENDFILE {
+		errorf("unexpected EOF before %%")
 	}
-	fmt.Fprintf(ftable, "\n\n")
-}
-
-// saves code between %{ and %}
-// adds an import for __fmt__
-func cpycode() {
-	lno := lineno // ============== WHY NEED TO STORED lineno?????
-
-	c := getrune(finput)
-	if c == '\n' { // %{\n
-		c = getrune(finput)
-		lineno++
+	t = parseRules()
+	writeSymbols()
+	if t == MARK {
+		cpyProg()
 	}
-	fmt.Fprintf(ftable, "\n//line %v:%v\n", infile, lineno)
-	// accumulate until %}
-	code := make([]rune, 0, 1024)
-	for c != EOF {
-		if c == '%' {
-			c = getrune(finput)
-			if c == '}' {
-				writecode(code, lno+1) // next line of %{
-				return
-			}
-			code = append(code, '%')
-		}
-		code = append(code, c)
-		if c == '\n' {
-			lineno++
-		}
-		c = getrune(finput)
-	}
-	lineno = lno // error, restore lineno
-	errorf("eof before %%}")
-}
-
-// writes code between %{ and %} to ftable
-// called by cpycode
-// adds an import for __yyfmt__ after the package clause
-func writecode(code []rune, lineno int) {
-	for i, line := range lines(code) {
-		writeline(line)
-		if !fmtImported && isPackageClause(line) {
-			fmtImported = true
-			fmt.Fprintln(ftable, `import __yyfmt__ "fmt"`)
-			fmt.Fprintf(ftable, "//line %v:%v\n\t\t", infile, lineno+i)
-		}
-	}
-}
-
-// break code into lines
-func lines(code []rune) [][]rune {
-	l := make([][]rune, 0, 100)
-	for len(code) > 0 {
-		// one line per loop
-		var i int
-		for i = range code { // i gets value from range
-			if code[i] == '\n' {
-				break
-			}
-		}
-		l = append(l, code[:i+1]) // including '\n' in line
-		code = code[i+1:]
-	}
-	return l
-}
-
-// writes line of code to ftable
-func writeline(line []rune) {
-	for _, r := range line {
-		ftable.WriteRune(r)
-	}
-}
-
-// skip leading spaces
-func skipspace(line []rune) []rune {
-	for len(line) > 0 {
-		if line[0] != ' ' && line[0] != '\t' {
-			break
-		}
-		line = line[1:]
-	}
-	return line
-}
-
-// check format: package abc //comment
-func isPackageClause(line []rune) bool {
-	line = skipspace(line)
-
-	// must be big enough.
-	if len(line) < len("package X\n") {
-		return false
-	}
-
-	// must start with "package"
-	for i, r := range []rune("package") {
-		if line[i] != r {
-			return false
-		}
-	}
-	line = skipspace(line[len("package"):])
-
-	// must have another identifier.
-	if len(line) == 0 || (!unicode.IsLetter(line[0]) && line[0] != '_') {
-		return false
-	}
-	for len(line) > 0 {
-		if !unicode.IsLetter(line[0]) && !unicode.IsDigit(line[0]) && line[0] != '_' {
-			break
-		}
-		line = line[1:]
-	}
-	line = skipspace(line)
-
-	// eol, newline, or comment must follow
-	if len(line) == 0 {
-		return true
-	}
-	if line[0] == '\r' || line[0] == '\n' {
-		return true
-	}
-	if len(line) >= 2 {
-		return line[0] == '/' && (line[1] == '/' || line[1] == '*')
-	}
-	return false
 }
 
 // parse declaration part of input file, including code section
@@ -625,23 +484,349 @@ func parseDeclr() int {
 	}
 }
 
-func fdtype(t int) int {
-	var ttype int
-	var tname string
-	if t >= NTBASE {
-		ttype = nonterms[t-NTBASE].typ
-		tname = nonterms[t-NTBASE].name
-	} else {
-		ttype = typ(aptTerm[t])
-		tname = terms[t].name
+// parse rules part of input file
+func parseRules() int {
+	fmt.Fprintf(fcode, "switch %snt {\n", prefix)
+	extendPrds()
+	// production 0 [$accept program $end 0]
+	allPrds[0] = prd{0, []int{NTBASE, start, 1, 0}}
+	t := gettok()
+	if t != IDENTCOLON {
+		errorf("bad syntax on first rule")
 	}
-	if ttype <= 0 {
-		errorf("must specify type for %s", tname)
+	// start symbol is not defined
+	if start == 0 {
+		if n := findTerm(tokname); n > 0 { // can be terminal but not expected!!!!
+			allPrds[0].prd[1] = n
+		} else { // use LHS of rule 0
+			allPrds[0].prd[1] = findInsertNT(tokname)
+		}
 	}
-	return ttype
+	nprod = 1
+	prod := make([]int, RULEINC) // temporary array to store rule
+	for t != MARK && t != ENDFILE {
+		rlines[nprod] = lineno
+		ruleline := lineno
+		i := 0 // idx of symbol in rule
+
+		// LHS of rule
+		if t == '|' {
+			prod[0] = allPrds[nprod-1].prd[0]
+			i++
+		} else if t == IDENTCOLON {
+			if findTerm(tokname) > 0 {
+				lerrorf(ruleline, "token illegal on LHS of grammar rule")
+			}
+			prod[i] = findInsertNT(tokname)
+			i++
+		} else {
+			lerrorf(ruleline, "illegal rule: missing <identifier>: or | ?")
+		}
+
+		// RHS of rule
+		t = gettok()
+		for {
+			for t == IDENTIFIER { // get all idenfier until action {
+				if n := findTerm(tokname); n > 0 {
+					prod[i] = n
+					aptPrd[nprod] = aptTerm[n]
+				} else {
+					prod[i] = findInsertNT(tokname)
+				}
+				i++
+				if i > len(prod) {
+					extend(&prod, RULEINC)
+				}
+				t = gettok()
+			}
+			if t == PREC {
+				if gettok() != IDENTIFIER {
+					lerrorf(ruleline, "illegal %%prec syntax")
+				}
+				j := findTerm(tokname)
+				if j < 0 {
+					lerrorf(ruleline, "terminal required after %%prec")
+				}
+				aptPrd[nprod] = aptTerm[j]
+				t = gettok()
+			}
+			if t != '=' { // not having action => end of rule
+				break
+			}
+			// have action
+			aptPrd[nprod] |= ACTFLAG // prd has action
+			fmt.Fprintf(fcode, "\n\tcase %v:", nprod)
+			// yyDollar = yyS[yypt-1 : yypt+1]
+			fmt.Fprintf(fcode, "\n\t\t%sDollar = %sS[%spt-%v:%spt+1]", prefix, prefix, prefix, i-1, prefix)
+			// write action to fcode
+			cpyact(prod, i)
+			t = gettok()
+			if t == IDENTIFIER { // action in the middle of rule
+				// define epsilon rule for the action
+				j := defineNT(fmt.Sprintf("$$%d", nprod))
+				allPrds[nprod] = prd{nprod, []int{j, -nprod}}
+				// the current production move 1 notch forward
+				nprod++
+				extendPrds()
+				aptPrd[nprod] = aptPrd[nprod-1] & ^ACTFLAG // unset action flag in original production
+				aptPrd[nprod-1] = ACTFLAG
+				rlines[nprod] = lineno
+				// add the new rule to original rule
+				prod[i] = j
+				i++
+				if i >= len(prod) {
+					extend(&prod, RULEINC)
+				}
+			}
+		}
+
+		// end of rule
+		for t == ';' { // skip all the semi
+			t = gettok()
+		}
+		prod[i] = -nprod // set the end of production
+		i++
+
+		// if no action specified, check if default action feasible
+		// required first symbol of RHS has the same type with LHS
+		if aptPrd[nprod]&ACTFLAG == 0 {
+			if lType := nonterms[prod[0]-NTBASE].typ; lType != 0 {
+				j := prod[1]
+				var rType int
+				if j < 0 {
+					lerrorf(ruleline, "must return a value, since LHS has a type")
+				}
+				if j >= NTBASE {
+					rType = nonterms[j-NTBASE].typ
+				} else {
+					rType = typ(aptTerm[j])
+				}
+				if lType != rType {
+					lerrorf(ruleline, "default action causes potential type clash")
+				}
+			}
+		}
+		extendPrds()
+		allPrds[nprod] = prd{nprod, make([]int, i)}
+		copy(allPrds[nprod].prd, prod)
+		// preparing for new rule
+		nprod++
+		extendPrds()
+		aptPrd[nprod] = 0
+	}
+	if TRANSIZE < termN+nontermN+1 {
+		errorf("too many tokens (%d) or non-terminals (%d)", termN, nontermN)
+	}
+	fmt.Fprintf(fcode, "\n\t}")
+	return t
 }
 
-// copy action to the next ; or closing }
+// write out terminal and nonterminal symbols to ftable
+func writeSymbols() {
+	for _, t := range terms[TOKSTART : termN+1] {
+		if t.isConst {
+			fmt.Fprintf(ftable, "const %s = %s\n", t.name, t.value)
+		}
+	}
+	ftable.WriteRune('\n')
+
+	fmt.Fprintf(ftable, "var %sToknames = [...]string{\n", prefix)
+	for _, t := range terms[1 : termN+1] {
+		fmt.Fprintf(ftable, "\t%q,\n", t.name)
+	}
+	fmt.Fprintf(ftable, "}\n")
+	ftable.WriteRune('\n')
+
+	fmt.Fprintf(ftable, "var %sStatenames = [...]string{\n", prefix)
+	//	for i:=TOKSTART; i<=ntokens; i++ {
+	//		fmt.Fprintf(ftable, "\t%q,\n", tokset[i].name);
+	//	}
+	fmt.Fprintf(ftable, "}\n")
+
+	ftable.WriteRune('\n')
+	fmt.Fprintf(ftable, "const %sEofCode = 1\n", prefix)
+	fmt.Fprintf(ftable, "const %sErrCode = 2\n", prefix)
+	fmt.Fprintf(ftable, "const %sInitialStackSize = %v\n", prefix, initialstacksize)
+}
+
+// copy program part of input file
+func cpyProg() {
+	fmt.Fprintf(ftable, "\n//line %v:%v\n", infile, lineno)
+	for {
+		c := getrune(finput)
+		if c == EOF {
+			break
+		}
+		ftable.WriteRune(c)
+	}
+}
+
+// copy the union declaration to the output, and the define file if present
+func cpyunion() {
+
+	fmt.Fprintf(ftable, "\n//line %v:%v\n", infile, lineno)
+	fmt.Fprintf(ftable, "type %sSymType struct", prefix)
+
+	level := 0
+
+out:
+	for {
+		c := getrune(finput)
+		if c == EOF {
+			errorf("EOF encountered while processing %%union")
+		}
+		ftable.WriteRune(c)
+		switch c {
+		case '\n':
+			lineno++
+		case '{':
+			if level == 0 {
+				fmt.Fprintf(ftable, "\n\tyys int")
+			}
+			level++
+		case '}':
+			level--
+			if level == 0 {
+				break out
+			}
+		}
+	}
+	fmt.Fprintf(ftable, "\n\n")
+}
+
+// saves code between %{ and %}
+// adds an import for __fmt__
+func cpycode() {
+	lno := lineno // ============== WHY NEED TO STORED lineno?????
+
+	c := getrune(finput)
+	if c == '\n' { // %{\n
+		c = getrune(finput)
+		lineno++
+	}
+	fmt.Fprintf(ftable, "\n//line %v:%v\n", infile, lineno)
+	// accumulate until %}
+	code := make([]rune, 0, 1024) // capacity will be 1024, 2048, 4096
+	for c != EOF {
+		if c == '%' {
+			c = getrune(finput)
+			if c == '}' { // %} end of code section
+				writecode(code, lno+1) // lno + 1 is the line right after %{
+				return
+			}
+			code = append(code, '%')
+		}
+		code = append(code, c)
+		if c == '\n' {
+			lineno++
+		}
+		c = getrune(finput)
+	}
+	lineno = lno // error, restore lineno
+	errorf("eof before %%}")
+}
+
+// writes code between %{ and %} to ftable
+// called by cpycode
+// adds an import for __yyfmt__ after the package clause
+func writecode(code []rune, lineno int) {
+	for i, line := range lines(code) {
+		writeline(line)
+		if !fmtImported && isPackageClause(line) {
+			fmtImported = true
+			fmt.Fprintln(ftable, `import __yyfmt__ "fmt"`)
+			fmt.Fprintf(ftable, "//line %v:%v\n\t\t", infile, lineno+i)
+		}
+	}
+}
+
+// break code into lines
+func lines(code []rune) [][]rune {
+	l := make([][]rune, 0, 100)
+	for len(code) > 0 {
+		// one line per loop
+		var i int
+		for i = range code { // i gets value from range
+			if code[i] == '\n' {
+				break
+			}
+		}
+		l = append(l, code[:i+1]) // including '\n' in line
+		code = code[i+1:]
+	}
+	return l
+}
+
+// writes line of code to ftable
+func writeline(line []rune) {
+	for _, r := range line {
+		ftable.WriteRune(r)
+	}
+}
+
+// check format: package abc //comment
+func isPackageClause(line []rune) bool {
+	line = skipspace(line)
+
+	// must be big enough.
+	if len(line) < len("package X\n") {
+		return false
+	}
+
+	// must start with "package"
+	for i, r := range []rune("package") {
+		if line[i] != r {
+			return false
+		}
+	}
+	line = skipspace(line[len("package"):])
+
+	// must have another identifier.
+	if len(line) == 0 || (!unicode.IsLetter(line[0]) && line[0] != '_') {
+		return false
+	}
+	for len(line) > 0 {
+		if !unicode.IsLetter(line[0]) && !unicode.IsDigit(line[0]) && line[0] != '_' {
+			break
+		}
+		line = line[1:]
+	}
+	line = skipspace(line)
+
+	// eol, newline, or comment must follow
+	if len(line) == 0 {
+		return true
+	}
+	if line[0] == '\r' || line[0] == '\n' {
+		return true
+	}
+	if len(line) >= 2 {
+		return line[0] == '/' && (line[1] == '/' || line[1] == '*')
+	}
+	return false
+}
+
+// skip leading spaces
+func skipspace(line []rune) []rune {
+	for len(line) > 0 {
+		if line[0] != ' ' && line[0] != '\t' {
+			break
+		}
+		line = line[1:]
+	}
+	return line
+}
+
+// extend allPrds, aptPrd, rlines if they are full
+func extendPrds() {
+	if nprod >= len(allPrds) {
+		extend(&allPrds, PRODINC)
+		extend(&aptPrd, PRODINC)
+		extend(&rlines, PRODINC)
+	}
+}
+
+// copy action until ";" or "}"
 func cpyact(prod []int, max int) {
 
 	fmt.Fprintf(fcode, "\n//line %v:%v", infile, lineno)
@@ -803,151 +988,19 @@ loop:
 	}
 }
 
-// parse rules part of input file
-func parseRules() {
-	t := parseDeclr()
-	if t == ENDFILE {
-		errorf("unexpected EOF before %%")
+// find type of a symbol
+func fdtype(t int) int {
+	var ttype int
+	var tname string
+	if t >= NTBASE {
+		ttype = nonterms[t-NTBASE].typ
+		tname = nonterms[t-NTBASE].name
+	} else {
+		ttype = typ(aptTerm[t])
+		tname = terms[t].name
 	}
-	fmt.Fprintf(fcode, "switch %snt {\n", prefix)
-	extendPrds()
-	// production 0 [$accept program $end 0]
-	allPrds[0] = prd{0, []int{NTBASE, start, 1, 0}}
-	t = gettok()
-	if t != IDENTCOLON {
-		errorf("bad syntax on first rule")
+	if ttype <= 0 {
+		errorf("must specify type for %s", tname)
 	}
-	// start symbol is not defined
-	if start == 0 {
-		if n := findTerm(tokname); n > 0 { // can be terminal but not expected!!!!
-			allPrds[0].prd[1] = n
-		} else { // use LHS of rule 0
-			allPrds[0].prd[1] = findInsertNT(tokname)
-		}
-	}
-	nprod = 1
-	prod := make([]int, RULEINC) // temporary array to store rule
-	for t != MARK && t != ENDFILE {
-		rlines[nprod] = lineno
-		ruleline := lineno
-		i := 0 // idx of symbol in rule
-
-		// LHS of rule
-		if t == '|' {
-			prod[0] = allPrds[nprod-1].prd[0]
-			i++
-		} else if t == IDENTCOLON {
-			if findTerm(tokname) > 0 {
-				lerrorf(ruleline, "token illegal on LHS of grammar rule")
-			}
-			prod[i] = findInsertNT(tokname)
-			i++
-		} else {
-			lerrorf(ruleline, "illegal rule: missing <identifier>: or | ?")
-		}
-
-		// RHS of rule
-		t = gettok()
-		for {
-			for t == IDENTIFIER { // get all idenfier until action {
-				if n := findTerm(tokname); n > 0 {
-					prod[i] = n
-					aptPrd[nprod] = aptTerm[n]
-				} else {
-					prod[i] = findInsertNT(tokname)
-				}
-				i++
-				if i > len(prod) {
-					extend(&prod, RULEINC)
-				}
-				t = gettok()
-			}
-			if t == PREC {
-				if gettok() != IDENTIFIER {
-					lerrorf(ruleline, "illegal %%prec syntax")
-				}
-				j := findTerm(tokname)
-				if j < 0 {
-					lerrorf(ruleline, "terminal required after %%prec")
-				}
-				aptPrd[nprod] = aptTerm[j]
-				t = gettok()
-			}
-			if t != '=' { // not having action => end of rule
-				break
-			}
-			// have action
-			aptPrd[nprod] |= ACTFLAG // prd has action
-			fmt.Fprintf(fcode, "\n\tcase %v:", nprod)
-			// yyDollar = yyS[yypt-1 : yypt+1]
-			fmt.Fprintf(fcode, "\n\t\t%sDollar = %sS[%spt-%v:%spt+1]", prefix, prefix, prefix, i-1, prefix)
-			// write action to fcode
-			cpyact(prod, i)
-			t = gettok()
-			if t == IDENTIFIER { // action in the middle of rule
-				// define epsilon rule for the action
-				j := defineNT(fmt.Sprintf("$$%d", nprod))
-				allPrds[nprod] = prd{nprod, []int{j, -nprod}}
-				// the current production move 1 notch forward
-				nprod++
-				extendPrds()
-				aptPrd[nprod] = aptPrd[nprod-1] & ^ACTFLAG // unset action flag in original production
-				aptPrd[nprod-1] = ACTFLAG
-				rlines[nprod] = lineno
-				// add the new rule to original rule
-				prod[i] = j
-				i++
-				if i >= len(prod) {
-					extend(&prod, RULEINC)
-				}
-			}
-		}
-
-		// end of rule
-		for t == ';' { // skip all the semi
-			t = gettok()
-		}
-		prod[i] = -nprod // set the end of production
-		i++
-
-		// if no action specified, check if default action feasible
-		// required first symbol of RHS has the same type with LHS
-		if aptPrd[nprod]&ACTFLAG == 0 {
-			if lType := nonterms[prod[0]-NTBASE].typ; lType != 0 {
-				j := prod[1]
-				var rType int
-				if j < 0 {
-					lerrorf(ruleline, "must return a value, since LHS has a type")
-				}
-				if j >= NTBASE {
-					rType = nonterms[j-NTBASE].typ
-				} else {
-					rType = typ(aptTerm[j])
-				}
-				if lType != rType {
-					lerrorf(ruleline, "default action causes potential type clash")
-				}
-			}
-		}
-		extendPrds()
-		allPrds[nprod] = prd{nprod, make([]int, i)}
-		copy(allPrds[nprod].prd, prod)
-		// preparing for new rule
-		nprod++
-		extendPrds()
-		aptPrd[nprod] = 0
-	}
-}
-
-func extendPrds() {
-	if nprod >= len(allPrds) {
-		extend(&allPrds, PRODINC)
-		extend(&aptPrd, PRODINC)
-		extend(&rlines, PRODINC)
-	}
-}
-
-// parse program part of input file
-func parseProg() {
-
+	return ttype
 }
