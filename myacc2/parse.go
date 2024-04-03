@@ -44,7 +44,6 @@ const (
 var tokname string
 var lineno int
 
-var finput *bufio.Reader // input file
 var peekline = 0
 var peekrune rune                  // temporarily store the rune that was read, but not consumed
 var ntypes int                     // number of types defined
@@ -325,10 +324,6 @@ func gettok() int {
 	ungetrune(finput, c) // put last rune back
 	return IDENTIFIER
 }
-
-var ftable *bufio.Writer
-var infile string
-var prefix string
 
 // parse .y input file
 func parseInput() {
