@@ -21,7 +21,7 @@ func TestStateGen(t *testing.T) {
 		{9, []int{4103, 5, -9}},
 	}
 
-	prdsStartWith = [][]prd{
+	prdYields = [][]prd{
 		{allPrds[0]},
 		{allPrds[1]},
 		{allPrds[2], allPrds[3]},

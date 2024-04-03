@@ -4,11 +4,6 @@ const NTBASE = 010000
 const WSETINC = 50 // increase for working sets    wsets
 const NSTATES = 16000
 
-type prd struct {
-	id  int
-	prd []int
-}
-
 type item struct {
 	off   int   // position of symbol right after dot
 	prd   prd   // pointer into prds
@@ -41,11 +36,7 @@ var wSet []wItem                    // store temporary items generated during cl
 var kernlp = make([]int, NSTATES+2) // pointer to kernel items
 var kernls []item
 var clkset lkset
-var tbitset = 0           // size of lookahead sets
-var firstSets []lkset     // the first sets of symbols
-var empty []bool          // to check whether a symbol is nullable
-var prdsStartWith [][]prd // 1st dimension is the symbol, 2nd dimension is prds started with it
-var allPrds []prd
+var tbitset = 0 // size of lookahead sets
 
 /* closure computes LALR(1) closure for state n*. used in stategen*/
 func closure(n int) {
@@ -99,7 +90,7 @@ func closure(n int) {
 				clkset.union(itemI.lkset)
 			}
 			// the productions that has first as LHS
-			prds := prdsStartWith[first-NTBASE]
+			prds := prdYields[first-NTBASE]
 
 		nextPrd:
 			for _, prdI = range prds {
@@ -157,7 +148,7 @@ func closure0(n int) {
 				continue
 			}
 
-			prds := prdsStartWith[first-NTBASE]
+			prds := prdYields[first-NTBASE]
 
 		nextPrd:
 			for _, prdI := range prds {
