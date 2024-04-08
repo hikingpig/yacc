@@ -1,0 +1,35 @@
+prdptr:
+[
+    [4096 4097 1 0]         [$accept, program, $end, 0],
+    [4097, 4098, -1]          [program, statement_list, -1],
+    [4098, 4098, 4099, -2]     [statement_list, statement_list, statement, -2],
+    [4098, -3]               [statement_list, -3],
+    [4099, 4100, -4]          [statement, expression, -4],
+    [4100, 4101, -5]          [expression, assign_expression, -5],
+    [4101, 5, 4, 4101, -6]    [assign_expression, ID, ASSIGN, assign_expression, -6],
+    [4101, 4102, -7]          [assign_expression, simple_expression, -7],
+    [4102, 4103, -8]          [simple_expression, get_variable, -8],
+    [4103, 5, -9]             [get_variable, ID, -9],
+]
+
+term symbols: [
+    {name: isconst:false value:0}                   0
+    {name:$end isconst:false value:0}               1
+    {name:error isconst:true value:57344}           2
+    {name:$unk isconst:false value:57345}           3
+    {name:ASSIGN isconst:true value:57346}          4
+    {name:ID isconst:true value:57347}              5
+    {name:NUMBER isconst:true value:57348}          6
+]
+
+non-term symbols
+[
+    {$accept false 0}                           0
+    {program false 3}                           1
+    {statement_list false 3}                    2
+    {statement false 3}                         3
+    {expression false 3}                        4
+    {assign_expression false 3}                 5
+    {simple_expression false 3}                 6
+    {get_variable false 3}                      7
+]

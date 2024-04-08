@@ -1,0 +1,23 @@
+Act = amem       ===> len = maxa
+Pact = indgo     ===> len = nstate
+Pgo = pgo        ===> len = nnonter + 1 // nonterm and idx to default-transition and those that is not default for that non-term
+
+Pgo = [0]
+gin: // likely a compression step
+    // search through amem to find a place that we can store
+    // p to p + max(state in yypgo[i])
+    // when find the spot, store it
+    // assign the starting idx (p) to pgo
+    nxti = -5, -7, -6, -4, -3, -2, -1
+    ====> non-term 5 7 6 4 3 2 1
+    - each p in amem
+        skip if amem[p] is set
+        each (state, transition) in yypgo[i]
+            s = p + state + 1
+            skip if amem[s] is set
+        // set amem[p] and all amem[s]
+        amem[p] = yypgo[i][l-1] ===> default transion of yypgo[i]
+        for each s = p + state + 1
+            amem[s] = yypgo[i][r+1] // r is indx of state
+        pgo[i] = p
+        return
