@@ -3,7 +3,7 @@ package myacc2
 import "fmt"
 
 // handle shift/reduce conflict in state s, between rule r and terminal symbol t
-func shiftReduceConflict(r, t, s int) {
+func srConflict(r, t, s int) {
 	lp := aptPrd[r]
 	lt := aptTerm[t]
 	if prec(lp) == 0 || prec(lt) == 0 { // shift
@@ -14,7 +14,7 @@ func shiftReduceConflict(r, t, s int) {
 	if prec(lt) > prec(lp) { // shift
 		return
 	}
-	as := LASC // reduce
+	as := LASC // check associativity
 	if prec(lt) == prec(lp) {
 		as = asc(lt)
 	}
@@ -30,29 +30,39 @@ func shiftReduceConflict(r, t, s int) {
 // compute reductions after closing a state
 func cReds(i int) {
 	red := 0
-	for _, w := range wSet[:cwp] {
-		first := w.item.first
+
+	// check if an item induces reduction
+	// handle reduce/reduce conflict or shift/reduce conflict
+	cRedItem := func(itemI item) {
+		first := itemI.first
 		if first > 0 {
-			continue
+			return
 		}
 		red = -first
-		lk := w.item.lkset
+		lk := itemI.lkset
 		for j, s := range trans[:termN] {
 			if !lk.check(s) {
 				continue
 			}
 			if s == 0 {
 				trans[j] = red
-			} else if s < 0 { // reduce/reduce conflict
+			} else if s < 0 { // reduce/reduce conflict. don't need to check the case s == red!
 				fmt.Fprintf(foutput, "\n %v: reduce/reduce conflict  (red'ns %v and %v) on %v",
 					i, -s, red, terms[j].name)
 				if -s > red { // favor rule higher in grammar
 					trans[j] = red
 				}
 			} else { // shift/reduce conflict
-				shiftReduceConflict(red, j, i)
+				srConflict(red, j, i)
 			}
 		}
+	}
+	// only consider kernel and epsilon items for the reduction of state i
+	for _, itemI := range kernls[kernlp[i]:kernlp[i+1]] {
+		cRedItem(itemI)
+	}
+	for _, itemI := range epsilons[i] {
+		cRedItem(itemI)
 	}
 	// compute reduction with maximum count
 	maxRed = 0
@@ -61,6 +71,7 @@ func cReds(i int) {
 	for _, act := range trans[:termN] {
 		if act < 0 {
 			r := -act
+			aptPrd[r] |= REDFLAG // track if a prd ever reduces
 			redCounts[r]++
 			if redCounts[r] > maxCount {
 				maxCount = redCounts[r]
@@ -68,7 +79,7 @@ func cReds(i int) {
 			}
 		}
 	}
-	for i, act := range trans[:termN] { // clear default reduction cells
+	for i, act := range trans[:termN] { // clear default reduction cells. the cell with 0s will also be treated as default reduction later!!!
 		if act == -maxRed {
 			trans[i] = 0
 		}
@@ -78,15 +89,13 @@ func cReds(i int) {
 
 func writeState(i int) {
 	fmt.Fprintf(foutput, "\nstate %v\n", i)
+	// write kernels
 	for _, a := range kernls[kernlp[i]:kernlp[i+1]] {
 		fmt.Fprintf(foutput, "\t%s\n", a.string())
 	}
-	if hasEpsilons[i] {
-		for _, w := range wSet[kernlp[i+1]-kernlp[i] : cwp] {
-			if w.item.first < 0 {
-				fmt.Fprintf(foutput, "\t%s\n", w.item.string())
-			}
-		}
+	// write epsilons
+	for _, itemI := range epsilons[i] {
+		fmt.Fprintf(foutput, "\t%s\n", itemI.string())
 	}
 
 	for t, s := range trans[:termN] {
@@ -118,11 +127,7 @@ func writeState(i int) {
 
 func output() {
 	for i := 0; i < nstate; i++ {
-		if hasEpsilons[i] {
-			closure(i)
-		} else {
-			closure0(i)
-		}
+		closure0(i)
 		fill(trans, termN+nontermN, 0)
 		for j, w := range wSet[:cwp] {
 			first := w.item.first
@@ -132,10 +137,10 @@ func output() {
 						addKernItem(v.item)
 					}
 				}
-				trans[first] = retrieveState(first)
+				trans[first] = retrieveState(first) // a shift
 			} else if first > NTBASE {
 				first -= NTBASE
-				trans[first+termN] = goTos[gotoIdx[i]+first]
+				trans[first+termN] = goTos[gotoIdx[i]+first] // a goto
 			}
 		}
 		if i == 1 {

@@ -152,7 +152,7 @@ func closure0(n int) {
 
 		nextPrd:
 			for _, prdI := range prds {
-				for i := 0; i < cwp; i++ {
+				for i := 0; i < cwp; i++ { // check if an item already derived by this prd. avoid infinite loop!
 					itemI := wSet[i].item
 					// derived item always has oft = 1
 					if itemI.off == 1 && itemI.prd.id == prdI.id {
