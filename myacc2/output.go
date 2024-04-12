@@ -140,7 +140,7 @@ func output() {
 				trans[first] = retrieveState(first) // a shift
 			} else if first > NTBASE {
 				first -= NTBASE
-				trans[first+termN] = goTos[gotoIdx[i]+first] // a goto
+				trans[first+termN] = actionStore[gotoIdx[i]+first] // a goto
 			}
 		}
 		if i == 1 {

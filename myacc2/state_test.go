@@ -67,7 +67,7 @@ func TestStateGen(t *testing.T) {
 		t.Errorf("kernels not correct: expected: %+v, got: %+v\n", expKern, resKern)
 	}
 	resGotos := []int{}
-	for _, a := range goTos {
+	for _, a := range actionStore {
 		if a == 0 {
 			break
 		}
