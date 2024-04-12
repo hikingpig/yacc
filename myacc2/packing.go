@@ -2,10 +2,11 @@ package myacc2
 
 var gotoIdx = make([]int, NSTATES)
 var actionStore = make([]int, ACTSIZE)
-var lastGoto int // last goto's index in goTos
 var packedGotos [][]int
 var pgoIdx []int // idx of compressed gotos stored in actionStore for a non-terminal symbol
-
+var lastActIdx int
+var maxoff int     // ===== comment later
+var shiftIdx []int // ======= should be intialized somewhere!!!!
 // compress goto table by row, each row is for a state. each column is for a non-terminal symbol
 func packGotosRow(trans []int, n int) int {
 	m := 0
@@ -34,8 +35,8 @@ nextStart:
 		for i, j := 0, start; i < len(trans); i, j = i+1, j+1 {
 			if trans[i] != 0 {
 				actionStore[j] = trans[i]
-				if j > lastGoto {
-					lastGoto = j
+				if j > lastActIdx {
+					lastActIdx = j
 				}
 			}
 		}
@@ -116,4 +117,91 @@ func packCol(s int, nextStates []int) {
 			}
 		}
 	}
+}
+
+// store a column of packed goto table for a non-terminal i into actionStore
+func storeGotoCol(i int) {
+	// ============= set ggreed somewhere else
+	col := packedGotos[i]
+	last := len(col) - 1
+	var idx int
+nextStart:
+	for start, a := range actionStore {
+		if a != 0 {
+			continue
+		}
+		for r := 0; r < last; r += 2 {
+			idx = start + col[r] + 1
+			if idx > lastActIdx {
+				lastActIdx = idx
+			}
+			if lastActIdx >= ACTSIZE {
+				errorf("actionStore overflow")
+			}
+			if actionStore[idx] != 0 {
+				continue nextStart
+			}
+		}
+		// find spot, store goto column into actionStore
+		actionStore[start] = col[last] // default goto. how can we check it is correct for other state?
+		if start > lastActIdx {        // edge-case: last == 0
+			lastActIdx = a
+		}
+		for r := 0; r < last; r += 2 {
+			s := start + col[r] + 1
+			actionStore[s] = col[r+1]
+		}
+		pgoIdx[i] = start
+	}
+}
+
+// store the shifts in a row in action table for a state i into actionStore
+func storeShifts(i int) {
+	// ====== clear tystate somewhere else
+	row := shifts[i]
+	l := len(row)
+	var idx int
+nextStart:
+	for start := -maxoff; start < ACTSIZE; start++ { // ====== roll of maxoff clarified later!
+		mayConflict := false
+		for r := 0; r < l; r += 2 {
+			idx = row[r] + start
+			if idx < 0 || idx > ACTSIZE { // ============= shouldn't it error here???
+				continue nextStart
+			}
+			if actionStore[idx] == 0 && row[r+1] != 0 {
+				mayConflict = true
+			} else if actionStore[idx] != row[r+1] {
+				continue nextStart
+			}
+		}
+		// check if any previously processed state has identical shifts
+		for j := 0; j < nstate; j++ {
+			if shiftIdx[j] == start {
+				if mayConflict {
+					continue nextStart
+				}
+				if l == len(shifts[j]) { // identical shifts. assign idx. done
+					shiftIdx[i] = start
+					return
+				}
+				continue nextStart
+			}
+		}
+		// find the spot, store shifts into actionStore
+		for r := 0; r < l; r += 2 {
+			idx := row[r] + start
+			if idx > lastActIdx {
+				lastActIdx = idx
+			}
+			// ========== will this happen? we check everything already!!!
+			if actionStore[idx] != 0 && actionStore[idx] != row[r+1] {
+				errorf("clobber of actionStore, pos'n %d, by %d", idx, row[r+1])
+			}
+			actionStore[idx] = row[r+1]
+		}
+		shiftIdx[i] = start
+		return
+	}
+	errorf("Error; failure to place a state %v", i)
 }

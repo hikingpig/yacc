@@ -86,7 +86,7 @@ func TestStateGen(t *testing.T) {
 	if !reflect.DeepEqual(resGotoIdx, expGotoIdx) {
 		t.Errorf("gotos not correct: expected: %v, got: %v\n", expGotos, resGotos)
 	}
-	if expLastGoto != lastGoto {
-		t.Errorf("last action not correct: expected: %v, got: %v", expLastGoto, lastGoto)
+	if expLastGoto != lastActIdx {
+		t.Errorf("last action not correct: expected: %v, got: %v", expLastGoto, lastActIdx)
 	}
 }

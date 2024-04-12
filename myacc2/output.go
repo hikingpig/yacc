@@ -2,6 +2,9 @@ package myacc2
 
 import "fmt"
 
+// ======== must be initialized when nstate is known!
+var shifts [][]int // first dimension is state, second dimension is pairs of (terminal symbol, next state)
+
 // handle shift/reduce conflict in state s, between rule r and terminal symbol t
 func srConflict(r, t, s int) {
 	lp := aptPrd[r]
@@ -87,6 +90,28 @@ func cReds(i int) {
 	defReds[i] = maxRed
 }
 
+// compute shifts after closing state i
+func cShifts(i int) {
+	n := 0
+	for _, act := range trans[:termN+1] {
+		if act > 0 && act != ACCEPTCODE && act != ERRCODE {
+			n++
+		}
+	}
+	row := make([]int, n*2) // pairs of (terminal symbol, next state)
+	n = 0
+	// this is repetitive, but more efficient for memory allocation
+	for t, act := range trans[:termN+1] {
+		if act > 0 && act != ACCEPTCODE && act != ERRCODE {
+			row[n] = t
+			n++
+			row[n] = act
+			n++
+		}
+	}
+	shifts[i] = row
+}
+
 func writeState(i int) {
 	fmt.Fprintf(foutput, "\nstate %v\n", i)
 	// write kernels
@@ -147,6 +172,7 @@ func output() {
 			trans[1] = ACCEPTCODE
 		}
 		cReds(i)
+		cShifts(i)
 		writeState(i)
 	}
 
