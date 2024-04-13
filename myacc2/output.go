@@ -93,6 +93,7 @@ func cReds(i int) {
 // compute shifts after closing state i
 func cShifts(i int) {
 	n := 0
+	// counting the shifts
 	for _, act := range trans[:termN+1] {
 		if act > 0 && act != ACCEPTCODE && act != ERRCODE {
 			n++
