@@ -35,7 +35,7 @@ var epsilons = map[int][]item{}
 
 func addKernItem(itemI item) {
 	itemI.off++
-	itemI.first = itemI.prd.prd[itemI.off]
+	itemI.first = itemI.prd[itemI.off]
 
 	i := kernlp[nstate+1]
 	if i >= len(kernls) {
@@ -52,7 +52,7 @@ func stategen() {
 	ntstates = make([]int, nontermN) // include $accept(NTBASE)
 	trans = make([]int, nontermN)
 	clkset = newLkset()
-	addKernItem(item{0, allPrds[0], 0, newLkset()})
+	addKernItem(item{0, prods[0], 0, newLkset()})
 	nstate++
 	for i := 0; i < nstate; i++ {
 		closure(i)
@@ -100,8 +100,8 @@ func newState(sym int) int {
 	}
 	// sort to help search later
 	sort.Slice(kernls[p1:p2], func(i, j int) bool {
-		return kernls[i].prd.id < kernls[j].prd.id ||
-			(kernls[i].prd.id == kernls[j].prd.id && kernls[i].off < kernls[j].off)
+		return id(kernls[i].prd) < id(kernls[j].prd) ||
+			(id(kernls[i].prd) == id(kernls[j].prd) && kernls[i].off < kernls[j].off)
 	})
 
 	if prev := searchState(nstate, sym); prev > 0 { // found previous state, merge
@@ -137,8 +137,8 @@ func retrieveState(sym int) int {
 	}
 	// sort to help search later
 	sort.Slice(kernls[p1:p2], func(i, j int) bool {
-		return kernls[i].prd.id < kernls[j].prd.id ||
-			(kernls[i].prd.id == kernls[j].prd.id && kernls[i].off < kernls[j].off)
+		return id(kernls[i].prd) < id(kernls[j].prd) ||
+			(id(kernls[i].prd) == id(kernls[j].prd) && kernls[i].off < kernls[j].off)
 	})
 
 	if prev := searchState(nstate, sym); prev > 0 { // found previous state, merge
@@ -163,7 +163,7 @@ prevState:
 			continue
 		}
 		for k, l := p1, q1; l < q2; k, l = k+1, l+1 {
-			if kernls[k].prd.id != kernls[l].prd.id || kernls[k].off != kernls[l].off {
+			if id(kernls[k].prd) != id(kernls[l].prd) || kernls[k].off != kernls[l].off {
 				continue prevState
 			}
 		}

@@ -101,10 +101,10 @@ func packCol(s int, nextStates []int) {
 	var a int
 	for changed {
 		changed = false
-		for _, p := range allPrds {
-			a = p.prd[1] - NTBASE
+		for _, p := range prods {
+			a = p[1] - NTBASE
 			if a >= 0 && deriveS[a] {
-				a = p.prd[0] - NTBASE
+				a = p[0] - NTBASE
 				if !deriveS[a] {
 					deriveS[a] = true
 					changed = true

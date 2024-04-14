@@ -2,29 +2,28 @@ package myacc2
 
 import "fmt"
 
-var allPrds []prd     // holds all production rules declared in input
-var prdYields [][]prd // 1st dimension is the symbol, 2nd dimension is prds started with it
+var prods [][]int     // holds all production rules declared in input
+var yields [][][]int  // 1st dimension is the symbol, 2nd dimension is prds started with it
 var empty []bool      // to check whether a symbol is nullable
 var firstSets []lkset // the first sets for each symbol
 
-// production has an id and a list of symbols
-type prd struct {
-	id  int
-	prd []int
+// get id of a production
+func id(prd []int) int {
+	return -prd[len(prd)-1]
 }
 
-// compute prdYiedls for each non-terminal symbol
-func cPrdYields() {
-	prdYields = make([][]prd, nontermN+1)
+// compute production-yield for each non-terminal symbol
+func cYields() {
+	yields = make([][][]int, nontermN+1)
 
-	yield := make([]prd, nprod)
+	yld := make([][]int, nprod)
 
 	if false {
 		for j, t := range nonterms[:nontermN+1] {
 			fmt.Printf("nonterms[%d] = %s\n", j, t.name)
 		}
-		for j, prod := range allPrds {
-			fmt.Printf("allPrds[%d][0] = %d+NTBASE\n", j, prod.prd[0]-NTBASE)
+		for j, prd := range prods {
+			fmt.Printf("allPrds[%d][0] = %d+NTBASE\n", j, prd[0]-NTBASE)
 		}
 	}
 
@@ -32,9 +31,9 @@ func cPrdYields() {
 	for i, s := range nonterms[:nontermN+1] {
 		n := 0
 		c := i + NTBASE
-		for _, prod := range allPrds {
-			if prod.prd[0] == c {
-				yield[n] = prod
+		for _, prd := range prods {
+			if prd[0] == c {
+				yld[n] = prd
 				n++
 			}
 		}
@@ -42,8 +41,8 @@ func cPrdYields() {
 			errorf("nonterminal %s doesn't yield any production", s.name)
 			continue
 		}
-		prdYields[i] = make([]prd, n)
-		copy(prdYields[i], yield)
+		yields[i] = make([][]int, n)
+		copy(yields[i], yld)
 	}
 	fatfl = 1
 	if nerrors != 0 {
@@ -52,25 +51,26 @@ func cPrdYields() {
 	}
 }
 
+// to check if a non-term symbol is nullable. use in computing firstsets
 func cEmpty() {
 	through := make([]bool, nontermN+1) // a symbol can derive through the end if all symbols on its RHS can derive through the end
 
 thru: // check if any symbol can not derive through the end
 	for {
-		for _, prod := range allPrds {
-			if through[prod.prd[0]-NTBASE] { // already checked
+		for _, prd := range prods {
+			if through[prd[0]-NTBASE] { // already checked
 				continue
 			}
 			i := 0
-			for _, s := range prod.prd[1 : len(prod.prd)-1] {
+			for _, s := range prd[1 : len(prd)-1] {
 				if s >= NTBASE && !through[s-NTBASE] {
 					break
 				}
 				i++
 			}
-			if i == len(prod.prd)-1 {
-				through[prod.prd[0]-NTBASE] = true
-				continue thru
+			if i == len(prd)-1 {
+				through[prd[0]-NTBASE] = true
+				continue thru // discover new symbol. search all over again
 			}
 		}
 		break
@@ -86,22 +86,22 @@ thru: // check if any symbol can not derive through the end
 	if nerrors != 0 {
 		//TODO summary, exit()
 	}
-	empty = make([]bool, nontermN+1)
+	empty = make([]bool, nontermN+1) // a LHS symbol is empty if there's a rule of its yield that RHS is ɛ or all the RHS symbol is empty
 
 search:
 	for {
 	nextPrd:
-		for _, prod := range allPrds[1:] {
-			if empty[prod.prd[0]] { // already checked
+		for _, prd := range prods[1:] {
+			if empty[prd[0]] { // already checked
 				continue
 			}
 
-			for _, s := range prod.prd[1:] {
+			for _, s := range prd[1:] {
 				if s < NTBASE || !empty[s-NTBASE] {
 					continue nextPrd
 				}
 			}
-			empty[prod.prd[0]-NTBASE] = true
+			empty[prd[0]-NTBASE] = true
 			// discover a new empty non-term. search all over again from first prd
 			continue search
 		}
@@ -112,14 +112,14 @@ search:
 // compute firstset for each non-terminal symbol
 func cFirstSets() {
 	firstSets = make([]lkset, nontermN+1)
-	var yield []prd
+	var yield [][]int
 	// fill firstset with terminal appears first on RHS
 	for i := range nonterms[:nontermN+1] { // seems don't need end idx here!
 		firstSets[i] = newLkset()
-		yield = prdYields[i] // prds started with s
+		yield = yields[i] // prds started with s
 
-		for _, prod := range yield {
-			for _, ch := range prod.prd[1 : len(prod.prd)-1] {
+		for _, prd := range yield {
+			for _, ch := range prd[1 : len(prd)-1] {
 				if ch < NTBASE { // terminal symbol, set it in firstset, move on to next prd
 					firstSets[i].set(ch)
 					break
@@ -136,9 +136,9 @@ func cFirstSets() {
 	for !changed {
 		changed = false
 		for i := range nonterms[:nontermN+1] {
-			yield = prdYields[i]
-			for _, prod := range yield {
-				for _, ch := range prod.prd[1 : len(prod.prd)-1] {
+			yield = yields[i]
+			for _, prd := range yield {
+				for _, ch := range prd[1 : len(prd)-1] {
 					if ch < NTBASE { // terminal symbol appears first. break
 						break
 					}

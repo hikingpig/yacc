@@ -29,12 +29,12 @@ func printWset() {
 	buf := strings.Builder{}
 	buf.WriteString("[]wItem{\n")
 	for _, e := range wSet {
-		if e.item.prd.prd != nil {
+		if e.item.prd != nil {
 			buf.WriteString("{item{\n")
 			buf.WriteString(fmt.Sprintf("%d,\n", e.item.off))
 			buf.WriteString("prd{\n")
-			buf.WriteString(fmt.Sprintf("id: %d,\n", e.item.prd.id))
-			buf.WriteString(fmt.Sprintf("prd:[]int%s,\n", printSlice(e.item.prd.prd)))
+			buf.WriteString(fmt.Sprintf("id: %d,\n", id(e.item.prd)))
+			buf.WriteString(fmt.Sprintf("prd:[]int%s,\n", printSlice(e.item.prd)))
 			buf.WriteString("},\n")
 			buf.WriteString(fmt.Sprintf("%d,\n", e.item.first))
 			buf.WriteString(fmt.Sprintf("lkset%s,\n", printSlice(e.item.lkset)))
@@ -60,17 +60,17 @@ func printState() {
 	buf := strings.Builder{}
 	buf.WriteString("[]item{\n")
 	for _, a := range kernls {
-		if a.prd.prd == nil {
+		if a.prd == nil {
 			break
 		}
-		buf.WriteString(fmt.Sprintf("{%d,prd{%d,[]int%s},%d,lkset%s},\n", a.off, a.prd.id, printSlice(a.prd.prd), a.first, printSlice(a.lkset)))
+		buf.WriteString(fmt.Sprintf("{%d,prd{%d,[]int%s},%d,lkset%s},\n", a.off, id(a.prd), printSlice(a.prd), a.first, printSlice(a.lkset)))
 	}
 	buf.WriteString("}\n")
 	fmt.Println(buf.String())
 }
 
 func printItem(a item) {
-	fmt.Printf("===== item: %v, %d->%d\n", a.prd.prd, a.off, a.first)
+	fmt.Printf("===== item: %v, %d->%d\n", a.prd, a.off, a.first)
 }
 
 func printItems(s []item) {

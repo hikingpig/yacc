@@ -484,7 +484,7 @@ func parseRules() int {
 	fmt.Fprintf(fcode, "switch %snt {\n", prefix)
 	extendPrds()
 	// production 0 [$accept program $end 0]
-	allPrds[0] = prd{0, []int{NTBASE, start, 1, 0}}
+	prods[0] = []int{NTBASE, start, 1, 0}
 	t := gettok()
 	if t != IDENTCOLON {
 		errorf("bad syntax on first rule")
@@ -492,13 +492,13 @@ func parseRules() int {
 	// start symbol is not defined
 	if start == 0 {
 		if n := findTerm(tokname); n > 0 { // can be terminal but not expected!!!!
-			allPrds[0].prd[1] = n
+			prods[0][1] = n
 		} else { // use LHS of rule 0
-			allPrds[0].prd[1] = findInsertNT(tokname)
+			prods[0][1] = findInsertNT(tokname)
 		}
 	}
 	nprod = 1
-	prod := make([]int, RULEINC) // temporary array to store rule
+	prd := make([]int, RULEINC) // temporary array to store rule
 	for t != MARK && t != ENDFILE {
 		rlines[nprod] = lineno
 		ruleline := lineno
@@ -506,13 +506,13 @@ func parseRules() int {
 
 		// LHS of rule
 		if t == '|' {
-			prod[0] = allPrds[nprod-1].prd[0]
+			prd[0] = prods[nprod-1][0]
 			i++
 		} else if t == IDENTCOLON {
 			if findTerm(tokname) > 0 {
 				lerrorf(ruleline, "token illegal on LHS of grammar rule")
 			}
-			prod[i] = findInsertNT(tokname)
+			prd[i] = findInsertNT(tokname)
 			i++
 		} else {
 			lerrorf(ruleline, "illegal rule: missing <identifier>: or | ?")
@@ -523,14 +523,14 @@ func parseRules() int {
 		for {
 			for t == IDENTIFIER { // get all idenfier until action {
 				if n := findTerm(tokname); n > 0 {
-					prod[i] = n
+					prd[i] = n
 					aptPrd[nprod] = aptTerm[n]
 				} else {
-					prod[i] = findInsertNT(tokname)
+					prd[i] = findInsertNT(tokname)
 				}
 				i++
-				if i > len(prod) {
-					extend(&prod, RULEINC)
+				if i > len(prd) {
+					extend(&prd, RULEINC)
 				}
 				t = gettok()
 			}
@@ -554,12 +554,12 @@ func parseRules() int {
 			// yyDollar = yyS[yypt-1 : yypt+1]
 			fmt.Fprintf(fcode, "\n\t\t%sDollar = %sS[%spt-%v:%spt+1]", prefix, prefix, prefix, i-1, prefix)
 			// write action to fcode
-			cpyact(prod, i)
+			cpyact(prd, i)
 			t = gettok()
 			if t == IDENTIFIER { // action in the middle of rule
 				// define epsilon rule for the action
 				j := defineNT(fmt.Sprintf("$$%d", nprod))
-				allPrds[nprod] = prd{nprod, []int{j, -nprod}}
+				prods[nprod] = []int{j, -nprod}
 				// the current production move 1 notch forward
 				nprod++
 				extendPrds()
@@ -567,10 +567,10 @@ func parseRules() int {
 				aptPrd[nprod-1] = ACTFLAG
 				rlines[nprod] = lineno
 				// add the new rule to original rule
-				prod[i] = j
+				prd[i] = j
 				i++
-				if i >= len(prod) {
-					extend(&prod, RULEINC)
+				if i >= len(prd) {
+					extend(&prd, RULEINC)
 				}
 			}
 		}
@@ -579,14 +579,14 @@ func parseRules() int {
 		for t == ';' { // skip all the semi
 			t = gettok()
 		}
-		prod[i] = -nprod // set the end of production
+		prd[i] = -nprod // set the end of production
 		i++
 
 		// if no action specified, check if default action feasible
 		// required first symbol of RHS has the same type with LHS
 		if aptPrd[nprod]&ACTFLAG == 0 {
-			if lType := nonterms[prod[0]-NTBASE].typ; lType != 0 {
-				j := prod[1]
+			if lType := nonterms[prd[0]-NTBASE].typ; lType != 0 {
+				j := prd[1]
 				var rType int
 				if j < 0 {
 					lerrorf(ruleline, "must return a value, since LHS has a type")
@@ -602,8 +602,8 @@ func parseRules() int {
 			}
 		}
 		extendPrds()
-		allPrds[nprod] = prd{nprod, make([]int, i)}
-		copy(allPrds[nprod].prd, prod)
+		prods[nprod] = make([]int, i)
+		copy(prods[nprod], prd)
 		// preparing for new rule
 		nprod++
 		extendPrds()
@@ -814,8 +814,8 @@ func skipspace(line []rune) []rune {
 
 // extend allPrds, aptPrd, rlines if they are full
 func extendPrds() {
-	if nprod >= len(allPrds) {
-		extend(&allPrds, PRODINC)
+	if nprod >= len(prods) {
+		extend(&prods, PRODINC)
 		extend(&aptPrd, PRODINC)
 		extend(&rlines, PRODINC)
 	}

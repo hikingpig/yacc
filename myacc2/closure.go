@@ -6,7 +6,7 @@ const NSTATES = 16000
 
 type item struct {
 	off   int   // position of symbol right after dot
-	prd   prd   // pointer into prds
+	prd   []int // pointer into prds
 	first int   // symbol right after dot
 	lkset lkset // lookahead set
 }
@@ -70,9 +70,9 @@ func closure(n int) {
 			}
 			// non-terminal symbol, get lookahead set for items derived from this item
 			itemI := wSet[i].item
-			prdI := itemI.prd
+			prd := itemI.prd
 			j := itemI.off + 1
-			sym := prdI.prd[j] // symbol right after first
+			sym := prd[j] // symbol right after first
 			for sym > 0 {
 				if sym < NTBASE {
 					clkset.set(sym) // terminal symbol, set it and stop
@@ -84,23 +84,23 @@ func closure(n int) {
 					break
 				}
 				j++
-				sym = prdI.prd[j]
+				sym = prd[j]
 			}
 			if sym <= 0 { // reach the end
 				clkset.union(itemI.lkset)
 			}
 			// the productions that has first as LHS
-			prds := prdYields[first-NTBASE]
+			prds := yields[first-NTBASE]
 
 		nextPrd:
-			for _, prdI = range prds {
+			for _, prd = range prds {
 				/* if an item is already derived with prdI,
 				for example, an item derived itself! t -> .t*f
 				merge its lookahead set with clkset*/
 				for i := 0; i < cwp; i++ {
 					itemI := wSet[i].item
 					// derived item always has oft = 1
-					if itemI.off == 1 && itemI.prd.id == prdI.id {
+					if itemI.off == 1 && id(itemI.prd) == id(prd) {
 						if itemI.lkset.union(clkset) {
 							changed = true
 							wSet[i].processed = false // mark to process later. may change closure of derived items
@@ -113,7 +113,7 @@ func closure(n int) {
 				if cwp > len(wSet) {
 					extend(&wSet, WSETINC)
 				}
-				wSet[cwp].item = item{1, prdI, prdI.prd[1], clkset.clone()}
+				wSet[cwp].item = item{1, prd, prd[1], clkset.clone()}
 				wSet[cwp].processed, wSet[cwp].done = false, false
 				changed = true
 				cwp++
@@ -148,14 +148,14 @@ func closure0(n int) {
 				continue
 			}
 
-			prds := prdYields[first-NTBASE]
+			prds := yields[first-NTBASE]
 
 		nextPrd:
-			for _, prdI := range prds {
+			for _, prd := range prds {
 				for i := 0; i < cwp; i++ { // check if an item already derived by this prd. avoid infinite loop!
 					itemI := wSet[i].item
 					// derived item always has oft = 1
-					if itemI.off == 1 && itemI.prd.id == prdI.id {
+					if itemI.off == 1 && id(itemI.prd) == id(prd) {
 						continue nextPrd
 
 					}
@@ -164,7 +164,7 @@ func closure0(n int) {
 				if cwp > len(wSet) {
 					extend(&wSet, WSETINC)
 				}
-				wSet[cwp].item = item{1, prdI, prdI.prd[1], emptyLkset()}
+				wSet[cwp].item = item{1, prd, prd[1], emptyLkset()}
 				wSet[cwp].processed, wSet[cwp].done = false, false
 				changed = true
 				cwp++
