@@ -113,6 +113,33 @@ func cShifts(i int) {
 	shifts[i] = row
 }
 
+// compute exception actions for state i
+func cExcp(i int, exca *[]int) {
+	hasExcp := false
+	for j, s := range trans[:termN+1] {
+		if s != 0 {
+			if s < 0 {
+				s = -s
+			} else if s == ACCEPTCODE {
+				s = -1
+			} else if s == ERRCODE {
+				s = 0
+			} else {
+				continue
+			}
+			if !hasExcp {
+				hasExcp = true
+				*exca = append(*exca, -1, i) // mark the beginning of exceptions for state i
+			}
+			*exca = append(*exca, j, s) // store the cause of exception
+		}
+	}
+	if hasExcp {
+		*exca = append(*exca, -2, defReds[i]) // store default reduction
+		defReds[i] = -2                       // mark exception in default reductions
+	}
+}
+
 func writeState(i int) {
 	fmt.Fprintf(foutput, "\nstate %v\n", i)
 	// write kernels
@@ -152,6 +179,7 @@ func writeState(i int) {
 }
 
 func output() {
+	exca := []int{}
 	for i := 0; i < nstate; i++ {
 		closure0(i)
 		fill(trans, termN+nontermN, 0)
@@ -174,6 +202,7 @@ func output() {
 		}
 		cReds(i)
 		cShifts(i)
+		cExcp(i, &exca)
 		writeState(i)
 	}
 
